@@ -169,3 +169,7 @@ poetry.toml
 
 # LSP config files
 pyrightconfig.json
+
+# after running detect_track.py
+runs/
+MOT17/

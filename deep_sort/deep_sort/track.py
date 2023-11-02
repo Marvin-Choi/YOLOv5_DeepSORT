@@ -1,5 +1,6 @@
 # vim: expandtab:ts=4:sw=4
 
+import numpy as np
 
 class TrackState:
     """
@@ -14,7 +15,7 @@ class TrackState:
     Tentative = 1
     Confirmed = 2
     Deleted = 3
-
+    Occluded = 4
 
 class Track:
     """
@@ -80,6 +81,41 @@ class Track:
         self._n_init = n_init
         self._max_age = max_age
 
+    @classmethod
+    def calculate_intersection(cls, track1, track2):
+        # Implement intersection calculation logic here
+        # For example, if your tracks are in (x, y, width, height) format:
+        x1, y1, w1, h1 = track1.to_tlwh()
+        x2, y2, w2, h2 = track2.to_tlwh()
+        x_intersection = max(0, min(x1 + w1, x2 + w2) - max(x1, x2))
+        y_intersection = max(0, min(y1 + h1, y2 + h2) - max(y1, y2))
+        intersection = x_intersection * y_intersection
+        return intersection
+
+    @classmethod
+    def calculate_union(cls, track1, track2):
+        # Implement union calculation logic here
+        # For example:
+        area1 = track1.to_tlwh()[2] * track1.to_tlwh()[3]
+        area2 = track2.to_tlwh()[2] * track2.to_tlwh()[3]
+        union = area1 + area2 - cls.calculate_intersection(track1, track2)
+        return union
+
+    @classmethod
+    def _iou(cls, track1, track2):
+        intersection = cls.calculate_intersection(track1, track2)
+        union = cls.calculate_union(track1, track2)
+        iou = intersection / union
+        return iou
+    
+    #intersection of track
+    @classmethod
+    def _iot(cls, track1, track2):
+        intersection = cls.calculate_intersection(track1, track2)
+        area = track2.to_tlwh()[2] * track2.to_tlwh()[3]
+        iot = intersection / area
+        return iot
+
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
         width, height)`.
@@ -123,7 +159,7 @@ class Track:
         self.age += 1
         self.time_since_update += 1
 
-    def update(self, kf, detection):
+    def update(self, kf, detection, similarity_threshold=1.0):
         """Perform Kalman filter measurement update step and update the feature
         cache.
 
@@ -135,6 +171,38 @@ class Track:
             The associated detection.
 
         """
+        # if self.state == TrackState.Occluded:
+        #     # Calculate similarity between the untracked object's feature
+        #     # and the saved feature of the object that occluded it
+        #     similarity = self.calculate_similarity(self.occluded_by.features[-1], detection.feature)
+            
+        #     if similarity < similarity_threshold:
+        #         self.state = TrackState.Confirmed
+        #         self.occluded_by = None
+        #         self.mean, self.covariance = kf.update(
+        #             self.mean, self.covariance, detection.to_xyah())
+        #         self.features.append(detection.feature)
+
+        #         self.hits += 1
+        #         self.time_since_update = 0
+        #         if self.hits < self._n_init:
+        #             self.state = TrackState.Tentative
+        # else:
+        #     self.mean, self.covariance = kf.update(
+        #         self.mean, self.covariance, detection.to_xyah())
+        #     self.features.append(detection.feature)
+
+        #     self.hits += 1
+        #     self.time_since_update = 0
+        #     if self.state == TrackState.Tentative and self.hits >= self._n_init:
+        #         self.state = TrackState.Confirmed
+
+        if self.state == TrackState.Occluded:
+            self.state = TrackState.Confirmed
+            self.occluded_by = None
+            if self.hits < self._n_init:
+                self.state = TrackState.Tentative
+
         self.mean, self.covariance = kf.update(
             self.mean, self.covariance, detection.to_xyah())
         self.features.append(detection.feature)
@@ -143,14 +211,53 @@ class Track:
         self.time_since_update = 0
         if self.state == TrackState.Tentative and self.hits >= self._n_init:
             self.state = TrackState.Confirmed
+    
+    
+    def calculate_similarity(self, feature1, feature2):
+        """Calculate similarity between two feature vectors.
 
-    def mark_missed(self):
+        Parameters
+        ----------
+        feature1 : ndarray
+            Feature vector 1.
+        feature2 : ndarray
+            Feature vector 2.
+
+        Returns
+        -------
+        float
+            Similarity score.
+
+        """
+        return np.dot(feature1, feature2) / (np.linalg.norm(feature1) * np.linalg.norm(feature2))
+
+    def mark_missed(self, kf, matches, tracks, detections, iou_threshold=0.5, iot_threshold=0.7):
         """Mark this track as missed (no association at the current time step).
         """
+
+        max_iot = 0.0
+        
+        for track_idx, detection_idx in matches:
+            iou = self._iou(self, tracks[track_idx])  # calculate intersection of union
+            iot = self._iot(self, tracks[track_idx])  # calculate intersection of track[track_idx]
+            if iou >= iou_threshold and iot > max_iot:
+                max_iot = iot
+                # Untracked object is contained by another object
+                # Save the CNN feature of the other object for later comparison
+                self.state = TrackState.Occluded
+                self.occluded_by = tracks[track_idx]
+
+                self.mean, self.covariance = kf.update(
+                    self.mean, self.covariance, detections[detection_idx].to_xyah())
+                self.features.append(detections[detection_idx].feature)
+
         if self.state == TrackState.Tentative:
             self.state = TrackState.Deleted
         elif self.time_since_update > self._max_age:
-            self.state = TrackState.Deleted
+            if self.state != TrackState.Occluded:
+                self.state = TrackState.Deleted
+            elif self.state == TrackState.Occluded and iot_threshold > max_iot:
+                self.state = TrackState.Deleted
 
     def is_tentative(self):
         """Returns True if this track is tentative (unconfirmed).
@@ -164,3 +271,7 @@ class Track:
     def is_deleted(self):
         """Returns True if this track is dead and should be deleted."""
         return self.state == TrackState.Deleted
+    
+    def is_occluded(self):
+        """Returns True if this track is occluded"""
+        return self.state == TrackState.Occluded

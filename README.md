@@ -1,6 +1,7 @@
 # YOLOv5_DeepSORT
 
-install pytorch version: 1.7.1 first.
+pytorch version: 1.7.1
+
 https://pytorch.org/get-started/previous-versions/
 
 pip install -r requirements.txt

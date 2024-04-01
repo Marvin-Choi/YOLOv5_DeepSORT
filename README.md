@@ -1,6 +1,5 @@
-# 제목 없음
-
-# 복잡한 환경에서 영상 기반의 다중물체 추적기술 보완 - DeepSORT를 활용한 pedestrian의 object permanence 개선
+# 복잡한 환경에서 영상 기반의 다중물체 추적기술 보완
+# - DeepSORT를 활용한 pedestrian의 object permanence 개선
 
 ## **실행 설명서(Execution Manual)**
 
@@ -31,7 +30,7 @@ pip install torch==1.7.1+cpu torchvision==0.8.2+cpu torchaudio==0.7.2 -f https:/
 이후 원하는 디렉토리에 추가한 소스코드 디렉토리로 들어가 requirements.txt로 남은 모듈 설치
 
 ```powershell
-YOLOv5_DeepSORT> pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ### **Dataset: MOT17**
@@ -49,13 +48,13 @@ gt.txt 파일들을 각 video의 이름과 동일하게 변경 후, video 파일
 모든 MOT17 DPM video dataset에 대해 evaluation 진행
 
 ```powershell
-**YOLOv5_DeepSORT> python detect_track.py –weights yolov5m.pt –img 640 –source “MOT17 video 경로” –save-txt –class 0 –line-thickness 1**
+python detect_track.py –weights yolov5m.pt –img 640 –source “MOT17 video 경로” –save-txt –class 0 –line-thickness 1
 ```
 
 ex)
 
 ```powershell
-YOLOv5_DeepSORT> python detect_track.py –weights yolov5m.pt –img 640 –source ./videos/MOT17-02-DPM.mp4 –save-txt –class 0 –line-thickness 1
+python detect_track.py –weights yolov5m.pt –img 640 –source ./videos/MOT17-02-DPM.mp4 –save-txt –class 0 –line-thickness 1
 ```
 
 - **-weights**: The name of the weight is passed here which will be automatically downloaded. We will use the medium network that is YOLOv5m.
@@ -65,13 +64,13 @@ YOLOv5_DeepSORT> python detect_track.py –weights yolov5m.pt –img 640 –sour
 - **-line-thickness**: Specifies bounding box thickness.
 
 ```powershell
-**YOLOv5_DeepSORT> python ./mot_evaluation/evaluate_tracking.py --seqmap “MOT17 evaluation을 모두 완료한 video나 gt.txt 경로” --track ./runs/ --gt “MOT17 gt.txt 경로”**
+python ./mot_evaluation/evaluate_tracking.py --seqmap “MOT17 evaluation을 모두 완료한 video나 gt.txt 경로” --track ./runs/ --gt “MOT17 gt.txt 경로”
 ```
 
 ex)
 
 ```powershell
-YOLOv5_DeepSORT> python ./mot_evaluation/evaluate_tracking.py --seqmap ./MOT17/videos/labels --track ./runs/ --gt ./MOT17/videos/labels
+python ./mot_evaluation/evaluate_tracking.py --seqmap ./MOT17/videos/labels --track ./runs/ --gt ./MOT17/videos/labels
 ```
 
 - **-seqmap**: Here, video filenames whose evaluation is to be done are specified.

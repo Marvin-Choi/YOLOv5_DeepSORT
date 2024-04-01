@@ -1,10 +1,10 @@
 # 복잡한 환경에서 영상 기반의 다중물체 추적기술 보완 - DeepSORT를 활용한 pedestrian의 object permanence 개선  
 
-
+<br>
 
 ## **실행 설명서(Execution Manual)**  
 
-
+<br>
 
 ### **실행 환경(Execution Environment)**
 
@@ -18,7 +18,7 @@ Pytorch 1.7.1+cpu
 
 Tesnorflow 2.4.1  
 
-
+<br>
 
 ### **환경 설정(Setting Python Environment)**
 
@@ -38,7 +38,7 @@ pip install torch==1.7.1+cpu torchvision==0.8.2+cpu torchaudio==0.7.2 -f https:/
 pip install -r requirements.txt
 ```  
 
-
+<br>
 
 ### **Dataset: MOT17**
 
@@ -50,7 +50,7 @@ gt.txt 파일들을 각 video의 이름과 동일하게 변경 후, video 파일
 
 ![FileTree](README_images/FileTree.png)  
 
-
+<br>
 
 ### **코드 실행 방법(How to execute code)**
 
@@ -72,7 +72,7 @@ python detect_track.py –weights yolov5m.pt –img 640 –source ./videos/MOT17
 - **-classes**: Specifies indexes of classes. For example 0 for the person, 32 for sports ball. Refer to yolov5/data/coco.yaml for more classes.
 - **-line-thickness**: Specifies bounding box thickness.  
 
-
+<br>
 
 ```powershell
 python ./mot_evaluation/evaluate_tracking.py --seqmap “MOT17 evaluation을 모두 완료한 video나 gt.txt 경로” --track ./runs/ --gt “MOT17 gt.txt 경로”

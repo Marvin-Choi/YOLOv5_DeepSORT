@@ -1,8 +1,9 @@
-# 복잡한 환경에서 영상 기반의 다중물체 추적기술 보완
-# - DeepSORT를 활용한 pedestrian의 object permanence 개선
+# 복잡한 환경에서 영상 기반의 다중물체 추적기술 보완 - DeepSORT를 활용한 pedestrian의 object permanence 개선
 
+  
 ## **실행 설명서(Execution Manual)**
 
+  
 ### **실행 환경(Execution Environment)**
 
 OS: Windows 10
@@ -15,6 +16,7 @@ Pytorch 1.7.1+cpu
 
 Tesnorflow 2.4.1
 
+  
 ### **환경 설정(Setting Python Environment)**
 
 같이 첨부된 소스코드를 원하는 디렉토리에 추가 후, python 3.8 가상환경 설정(anaconda 권장)
@@ -33,6 +35,7 @@ pip install torch==1.7.1+cpu torchvision==0.8.2+cpu torchaudio==0.7.2 -f https:/
 pip install -r requirements.txt
 ```
 
+  
 ### **Dataset: MOT17**
 
 [https://motchallenge.net/data/MOT17/](https://motchallenge.net/data/MOT17/) 에서 dataset 다운로드 후 DPM dataset 사용
@@ -43,6 +46,7 @@ gt.txt 파일들을 각 video의 이름과 동일하게 변경 후, video 파일
 
 ![FileTree](README_images/FileTree.png)
 
+  
 ### **코드 실행 방법(How to execute code)**
 
 모든 MOT17 DPM video dataset에 대해 evaluation 진행
@@ -63,6 +67,7 @@ python detect_track.py –weights yolov5m.pt –img 640 –source ./videos/MOT17
 - **-classes**: Specifies indexes of classes. For example 0 for the person, 32 for sports ball. Refer to yolov5/data/coco.yaml for more classes.
 - **-line-thickness**: Specifies bounding box thickness.
 
+  
 ```powershell
 python ./mot_evaluation/evaluate_tracking.py --seqmap “MOT17 evaluation을 모두 완료한 video나 gt.txt 경로” --track ./runs/ --gt “MOT17 gt.txt 경로”
 ```

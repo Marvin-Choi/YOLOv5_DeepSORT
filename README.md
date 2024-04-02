@@ -2,6 +2,10 @@
 
 <br>
 
+## [Project Report](https://github.com/Marvin-Choi/YOLOv5_DeepSORT/blob/main/MOT_Project_Report_2024.04.02.pdf)
+
+<br>
+
 ## **실행 설명서(Execution Manual)**  
 
 <br>
